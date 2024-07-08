@@ -10,6 +10,7 @@ interface VotingContextType {
     connectWallet: () => void;
     currentAccount: string;
     role: Role;
+    addAdmin: (address: string) => Promise<void>;
     fetchRoles: () => Promise<void>;
 }
 
@@ -20,7 +21,7 @@ export const VotingContext = createContext<VotingContextType | undefined>(
     undefined
 );
 
-enum Role {
+export enum Role {
     OWNER,
     ADMIN,
     CANDIDATE,
@@ -97,6 +98,20 @@ export const VotingProvider = ({ children }: { children: React.ReactNode }) => {
         }
         setLoadingRole(false);
     };
+    const addAdmin = async (address: string) => {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        const contract = fetchContract(signer);
+        try {
+            const transaction = await contract.addAdmin(address, {
+                gasLimit: 300000,
+            });
+            await transaction.wait();
+        } catch (err) {
+            console.log("Error adding admin", err);
+        }
+    };
 
     return (
         <VotingContext.Provider
@@ -105,6 +120,7 @@ export const VotingProvider = ({ children }: { children: React.ReactNode }) => {
                 currentAccount,
                 role,
                 fetchRoles,
+                addAdmin,
             }}
         >
             {children}

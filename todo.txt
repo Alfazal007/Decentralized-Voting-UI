@@ -1,4 +1,3 @@
-connect to wallet -- hard part
 // the view will be based on type of user
 owner -- can add admins and also declare results
 admins -- can add candidates and also voters and can start adding voters and start voting process
