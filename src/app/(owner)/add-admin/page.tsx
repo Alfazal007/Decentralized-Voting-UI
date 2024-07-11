@@ -10,10 +10,11 @@ import { useContext, useState } from "react";
 export default function () {
     const [newAdmin, setNewAdmin] = useState<string>("");
     const context = useContext(VotingContext);
+    const [winner, setWinner] = useState<any>();
     if (!context) {
         return <div>Loading...</div>; // Or handle the undefined context appropriately
     }
-    const { role, addAdmin } = context;
+    const { role, addAdmin, declareWinner } = context;
 
     const { toast } = useToast();
 
@@ -36,6 +37,24 @@ export default function () {
             setNewAdmin("");
         }
     }
+
+    async function declarer() {
+        try {
+            const res = await declareWinner();
+            console.log({ res });
+            console.log(typeof res);
+            setWinner(res);
+        } catch (err) {
+            console.log(err);
+            toast({
+                title: "Could not add new admin",
+                variant: "destructive",
+            });
+        } finally {
+            setNewAdmin("");
+        }
+    }
+
     if (role != Role.OWNER) {
         return <>You are not owner, so you cannot really do anything here</>;
     } else {
@@ -51,6 +70,8 @@ export default function () {
                         }}
                     />
                     <Button onClick={addAdminner}>Add admin</Button>
+                    <Button onClick={declarer}>Declare winner</Button>
+                    {winner}
                 </div>
             </>
         );

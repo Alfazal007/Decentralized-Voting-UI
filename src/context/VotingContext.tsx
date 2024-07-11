@@ -11,7 +11,17 @@ interface VotingContextType {
     currentAccount: string;
     role: Role;
     addAdmin: (address: string) => Promise<void>;
+    addCandidates: (address: string) => Promise<void>;
     fetchRoles: () => Promise<void>;
+    candidatesAddingStarted: () => Promise<boolean>;
+    votingStarted: () => Promise<boolean>;
+    startAddingCandidates: () => Promise<void>;
+    stopAddingCandidates: () => Promise<void>;
+    addVoter: (address: string) => Promise<void>;
+    startVoting: () => Promise<void>;
+    stopVoting: () => Promise<void>;
+    castVote: (address: string) => Promise<void>;
+    declareWinner: () => Promise<any>;
 }
 
 const fetchContract = (signerOrProvider: ethers.ContractRunner) =>
@@ -112,15 +122,182 @@ export const VotingProvider = ({ children }: { children: React.ReactNode }) => {
             console.log("Error adding admin", err);
         }
     };
+    const candidatesAddingStarted = async () => {
+        const provider = new ethers.JsonRpcProvider(
+            "https://sepolia.drpc.org",
+            "sepolia"
+        );
+        const contract = fetchContract(provider);
+        const candidatesAddingStarted =
+            await contract.candidatesAddingStarted();
+        return candidatesAddingStarted;
+    };
+
+    //TODO:: Complete this
+    const addCandidates = async (address: string) => {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        const contract = fetchContract(signer);
+        try {
+            const transaction = await contract.addCandidates(address, {
+                gasLimit: 300000,
+            });
+            await transaction.wait();
+        } catch (err) {
+            console.log("Error adding admin", err);
+        }
+    };
+    const startAddingCandidates = async () => {
+        if (role != Role.ADMIN) {
+            return;
+        }
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        const contract = fetchContract(signer);
+        try {
+            const transaction = await contract.startAddingCandidates({
+                gasLimit: 300000,
+            });
+            await transaction.wait();
+        } catch (err) {
+            console.log("Error adding admin", err);
+        }
+    };
+    const stopAddingCandidates = async () => {
+        if (role != Role.ADMIN) {
+            return;
+        }
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        const contract = fetchContract(signer);
+        try {
+            const transaction = await contract.endAddingCandidates({
+                gasLimit: 300000,
+            });
+            await transaction.wait();
+        } catch (err) {
+            console.log("Error adding admin", err);
+        }
+    };
+
+    const addVoter = async (address: string) => {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        const contract = fetchContract(signer);
+        try {
+            const transaction = await contract.addVoter(address, {
+                gasLimit: 300000,
+            });
+            await transaction.wait();
+        } catch (err) {
+            console.log("Error adding admin", err);
+        }
+    };
+    const startVoting = async () => {
+        if (role != Role.ADMIN) {
+            return;
+        }
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        const contract = fetchContract(signer);
+        try {
+            const transaction = await contract.startVoting({
+                gasLimit: 300000,
+            });
+            await transaction.wait();
+        } catch (err) {
+            console.log("Error adding admin", err);
+        }
+    };
+
+    const votingStarted = async () => {
+        const provider = new ethers.JsonRpcProvider(
+            "https://sepolia.drpc.org",
+            "sepolia"
+        );
+        const contract = fetchContract(provider);
+        const votingStarted = await contract.votingStarted();
+        return votingStarted;
+    };
+
+    const stopVoting = async () => {
+        if (role != Role.ADMIN) {
+            return;
+        }
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        const contract = fetchContract(signer);
+        try {
+            const transaction = await contract.endVoting({
+                gasLimit: 300000,
+            });
+            await transaction.wait();
+        } catch (err) {
+            console.log("Error adding admin", err);
+        }
+    };
+
+    const castVote = async (address: string) => {
+        if (role != Role.VOTER) {
+            return;
+        }
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        const contract = fetchContract(signer);
+        try {
+            const transaction = await contract.castVote(address, {
+                gasLimit: 300000,
+            });
+            await transaction.wait();
+        } catch (err) {
+            console.log("Error adding admin", err);
+        }
+    };
+
+    const declareWinner = async () => {
+        if (role != Role.OWNER) {
+            return;
+        }
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        const contract = fetchContract(signer);
+        try {
+            const transaction = await contract.declareWinner({
+                gasLimit: 300000,
+            });
+            const res = transaction.wait();
+            return res;
+        } catch (err) {
+            console.log("Error adding admin", err);
+        }
+    };
 
     return (
         <VotingContext.Provider
             value={{
+                castVote,
                 connectWallet,
                 currentAccount,
                 role,
                 fetchRoles,
                 addAdmin,
+                addCandidates,
+                candidatesAddingStarted,
+                startAddingCandidates,
+                stopAddingCandidates,
+                addVoter,
+                startVoting,
+                votingStarted,
+                stopVoting,
+                declareWinner,
             }}
         >
             {children}
